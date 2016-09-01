@@ -603,3 +603,5 @@ if(BUILD_DOCUMENTATION)
   endif()
 endif()
 
+option(INSTALL_GUI_DEPS "Install GUI dependencies." OFF)
+

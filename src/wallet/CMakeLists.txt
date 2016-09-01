@@ -74,14 +74,20 @@ target_link_libraries(wallet
     ${Boost_REGEX_LIBRARY}
     ${EXTRA_LIBRARIES})
 
-set(libs_to_merge wallet cryptonote_core mnemonics common crypto)
+#set(libs_to_merge wallet cryptonote_core mnemonics common crypto)
 
-foreach(lib ${libs_to_merge})
-    list(APPEND objlibs $<TARGET_OBJECTS:obj_${lib}>) # matches naming convention in src/CMakeLists.txtA
-endforeach()
-add_library(wallet_merged STATIC ${objlibs})
-install(TARGETS wallet_merged
-    ARCHIVE DESTINATION lib)
+#foreach(lib ${libs_to_merge})
+#    list(APPEND objlibs $<TARGET_OBJECTS:obj_${lib}>) # matches naming convention in src/CMakeLists.txtA
+#endforeach()
+#add_library(wallet_merged STATIC ${objlibs})
 
-install(FILES ${wallet_api_headers}
-    DESTINATION include/wallet)
+
+# installing library and headers only if we building for GUI
+if (INSTALL_GUI_DEPS)
+    install(TARGETS wallet
+        ARCHIVE DESTINATION lib)
+    install(FILES ${wallet_api_headers}
+        DESTINATION include/wallet)
+endif()
+
+

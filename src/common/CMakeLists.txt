@@ -71,5 +71,11 @@ target_link_libraries(common
     ${Boost_SYSTEM_LIBRARY}
     ${EXTRA_LIBRARIES})
 
+# install this lib in case we're building GUI
+if (INSTALL_GUI_DEPS)
+    install(TARGETS common
+        ARCHIVE DESTINATION lib)
+endif()
+
 #bitmonero_install_headers(common
 #  ${common_headers})

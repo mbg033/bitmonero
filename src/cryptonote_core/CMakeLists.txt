@@ -88,3 +88,11 @@ target_link_libraries(cryptonote_core
     ${Boost_SYSTEM_LIBRARY}
     ${Boost_THREAD_LIBRARY}
     ${EXTRA_LIBRARIES})
+
+
+# install this lib in case we're building GUI
+if (INSTALL_GUI_DEPS)
+    install(TARGETS cryptonote_core
+        ARCHIVE DESTINATION lib)
+endif()
+

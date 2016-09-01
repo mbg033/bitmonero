@@ -228,3 +228,10 @@ if (MINGW)
       COPYONLY)
   endforeach ()
 endif ()
+
+# install this lib in case we're building GUI
+if (INSTALL_GUI_DEPS)
+    install(TARGETS unbound
+        ARCHIVE DESTINATION lib)
+endif()
+

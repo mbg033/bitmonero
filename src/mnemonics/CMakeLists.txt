@@ -53,3 +53,11 @@ bitmonero_add_library(mnemonics
 target_link_libraries(mnemonics
   LINK_PRIVATE
     ${Boost_SYSTEM_LIBRARY})
+
+
+# install this lib in case we're building GUI
+if (INSTALL_GUI_DEPS)
+    install(TARGETS mnemonics
+        ARCHIVE DESTINATION lib)
+endif()
+

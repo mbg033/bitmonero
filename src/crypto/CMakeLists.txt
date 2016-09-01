@@ -74,3 +74,10 @@ bitmonero_add_library(crypto
   ${crypto_sources}
   ${crypto_headers}
   ${crypto_private_headers})
+
+# install this lib in case we're building GUI
+if (INSTALL_GUI_DEPS)
+    install(TARGETS crypto
+        ARCHIVE DESTINATION lib)
+endif()
+
