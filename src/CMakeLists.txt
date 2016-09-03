@@ -50,7 +50,7 @@ endfunction ()
 function (enable_stack_trace target)
   if(STACK_TRACE)
     set_property(TARGET ${target}
-      APPEND PROPERTY COMPILER_DEFINITIONS "-DSTACK_TRACE")
+      APPEND PROPERTY COMPILE_DEFINITIONS "STACK_TRACE")
     if (STATIC)
       set_property(TARGET "${target}"
         APPEND PROPERTY LINK_FLAGS "-Wl,--wrap=__cxa_throw")
@@ -82,8 +82,13 @@ function (bitmonero_add_library name)
     FILES
       ${ARGN})
 
-  add_library("${name}"
-    ${ARGN})
+  # Define a ("virtual") object library and an actual library that links those
+  # objects together. The virtual libraries can be arbitrarily combined to link
+  # any subset of objects into one library archive. This is used for releasing
+  # libwallet, which combines multiple components.
+  set(objlib obj_${name})
+  add_library(${objlib} OBJECT ${ARGN})
+  add_library("${name}" STATIC $<TARGET_OBJECTS:${objlib}>)
   set_property(TARGET "${name}"
     PROPERTY
       FOLDER "libs")
@@ -91,6 +96,7 @@ endfunction ()
 
 add_subdirectory(common)
 add_subdirectory(crypto)
+add_subdirectory(ringct)
 add_subdirectory(cryptonote_core)
 add_subdirectory(blockchain_db)
 add_subdirectory(mnemonics)
