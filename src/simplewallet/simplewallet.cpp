@@ -502,10 +502,10 @@ bool simple_wallet::set_default_mixin(const std::vector<std::string> &args/* = s
   }
 }
 
-bool simple_wallet::set_default_fee_multiplier(const std::vector<std::string> &args/* = std::vector<std::string>()*/)
+bool simple_wallet::set_default_priority(const std::vector<std::string> &args/* = std::vector<std::string>()*/)
 {
   bool success = false;
-  int fee_multiplier = 0;
+  int priority = 0;
   if (m_wallet->watch_only())
   {
     fail_msg_writer() << tr("wallet is watch-only and cannot transfer");
@@ -515,19 +515,19 @@ bool simple_wallet::set_default_fee_multiplier(const std::vector<std::string> &a
   {
     if (strchr(args[1].c_str(), '-'))
     {
-      fail_msg_writer() << tr("fee multiplier must be 0, 1, 2, or 3 ");
+      fail_msg_writer() << tr("priority must be 0, 1, 2, or 3 ");
       return true;
     }
     if (args[1] == "0")
     {
-      fee_multiplier = 0;
+      priority = 0;
     }
     else
     {
-      fee_multiplier = boost::lexical_cast<int>(args[1]);
-      if (fee_multiplier != 1 && fee_multiplier != 2 && fee_multiplier != 3)
+      priority = boost::lexical_cast<int>(args[1]);
+      if (priority != 1 && priority != 2 && priority != 3)
       {
-        fail_msg_writer() << tr("fee multiplier must be 0, 1, 2, or 3");
+        fail_msg_writer() << tr("priority must be 0, 1, 2, or 3");
         return true;
       }
     }
@@ -548,18 +548,18 @@ bool simple_wallet::set_default_fee_multiplier(const std::vector<std::string> &a
       return true;
     }
 
-    m_wallet->set_default_fee_multiplier(fee_multiplier);
+    m_wallet->set_default_priority(priority);
     m_wallet->rewrite(m_wallet_file, pwd_container.password());
     return true;
   }
   catch(const boost::bad_lexical_cast &)
   {
-    fail_msg_writer() << tr("fee multiplier must be 0, 1, 2 or 3");
+    fail_msg_writer() << tr("priority must be 0, 1, 2 or 3");
     return true;
   }
   catch(...)
   {
-    fail_msg_writer() << tr("could not change default fee multiplier");
+    fail_msg_writer() << tr("could not change default priority");
     return true;
   }
 }
@@ -662,7 +662,7 @@ simple_wallet::simple_wallet()
   m_cmd_binder.set_handler("viewkey", boost::bind(&simple_wallet::viewkey, this, _1), tr("Display private view key"));
   m_cmd_binder.set_handler("spendkey", boost::bind(&simple_wallet::spendkey, this, _1), tr("Display private spend key"));
   m_cmd_binder.set_handler("seed", boost::bind(&simple_wallet::seed, this, _1), tr("Display Electrum-style mnemonic seed"));
-  m_cmd_binder.set_handler("set", boost::bind(&simple_wallet::set_variable, this, _1), tr("Available options: seed language - set wallet seed language; always-confirm-transfers <1|0> - whether to confirm unsplit txes; store-tx-info <1|0> - whether to store outgoing tx info (destination address, payment ID, tx secret key) for future reference; default-mixin <n> - set default mixin (default default is 4); auto-refresh <1|0> - whether to automatically sync new blocks from the daemon; refresh-type <full|optimize-coinbase|no-coinbase|default> - set wallet refresh behaviour; fee-multiplier [1|2|3] - normal/elevated/priority fee"));
+  m_cmd_binder.set_handler("set", boost::bind(&simple_wallet::set_variable, this, _1), tr("Available options: seed language - set wallet seed language; always-confirm-transfers <1|0> - whether to confirm unsplit txes; store-tx-info <1|0> - whether to store outgoing tx info (destination address, payment ID, tx secret key) for future reference; default-mixin <n> - set default mixin (default default is 4); auto-refresh <1|0> - whether to automatically sync new blocks from the daemon; refresh-type <full|optimize-coinbase|no-coinbase|default> - set wallet refresh behaviour; priority [1|2|3] - normal/elevated/priority fee"));
   m_cmd_binder.set_handler("rescan_spent", boost::bind(&simple_wallet::rescan_spent, this, _1), tr("Rescan blockchain for spent outputs"));
   m_cmd_binder.set_handler("get_tx_key", boost::bind(&simple_wallet::get_tx_key, this, _1), tr("Get transaction key (r) for a given <txid>"));
   m_cmd_binder.set_handler("check_tx_key", boost::bind(&simple_wallet::check_tx_key, this, _1), tr("Check amount going to <address> in <txid>"));
@@ -688,7 +688,7 @@ bool simple_wallet::set_variable(const std::vector<std::string> &args)
     success_msg_writer() << "default-mixin = " << m_wallet->default_mixin();
     success_msg_writer() << "auto-refresh = " << m_wallet->auto_refresh();
     success_msg_writer() << "refresh-type = " << get_refresh_type_name(m_wallet->get_refresh_type());
-    success_msg_writer() << "fee-multiplier = " << m_wallet->get_default_fee_multiplier();
+    success_msg_writer() << "priority = " << m_wallet->get_default_priority();
     return true;
   }
   else
@@ -784,18 +784,18 @@ bool simple_wallet::set_variable(const std::vector<std::string> &args)
         return true;
       }
     }
-    else if (args[0] == "fee-multiplier")
+    else if (args[0] == "priority")
     {
       if (args.size() <= 1)
       {
-        fail_msg_writer() << tr("set fee-multiplier: needs an argument: 0, 1, 2, or 3");
+        fail_msg_writer() << tr("set priority: needs an argument: 0, 1, 2, or 3");
         return true;
       }
       else
       {
         std::vector<std::string> local_args = args;
         local_args.erase(local_args.begin(), local_args.begin()+2);
-        set_default_fee_multiplier(local_args);
+        set_default_priority(local_args);
         return true;
       }
     }
@@ -1598,7 +1598,7 @@ bool simple_wallet::new_wallet(const std::string &wallet_file, const std::string
     tr("Your wallet has been generated!\n"
     "To start synchronizing with the daemon, use \"refresh\" command.\n"
     "Use \"help\" command to see the list of available commands.\n"
-    "Always use \"exit\" command when closing simplewallet to save your\n"
+    "Always use \"exit\" command when closing monero-wallet-cli to save your\n"
     "current session's state. Otherwise, you might need to synchronize \n"
     "your wallet again (your wallet keys are NOT at risk in any case).\n")
   ;
@@ -3746,7 +3746,7 @@ int main(int argc, char* argv[])
       return false;
     }
     // epee didn't find path to executable from argv[0], so use this default file name.
-    log_file_name = "simplewallet.log";
+    log_file_name = "monero-wallet-cli.log";
     // The full path will use cwd because epee also returned an empty default log folder.
   }
   default_log /= log_file_name;
@@ -3779,7 +3779,7 @@ int main(int argc, char* argv[])
     if (command_line::get_arg(vm, command_line::arg_help))
     {
       success_msg_writer() << "Monero '" << MONERO_RELEASE_NAME << "' (v" << MONERO_VERSION_FULL << ")";
-      success_msg_writer() << sw::tr("Usage:") << " simplewallet [--wallet-file=<file>|--generate-new-wallet=<file>] [--daemon-address=<host>:<port>] [<COMMAND>]";
+      success_msg_writer() << sw::tr("Usage:") << " monero-wallet-cli [--wallet-file=<file>|--generate-new-wallet=<file>] [--daemon-address=<host>:<port>] [<COMMAND>]";
       success_msg_writer() << desc_all;
       return false;
     }
@@ -3798,8 +3798,8 @@ int main(int argc, char* argv[])
     return 0;
 
   // log_file_path
-  //   default: < argv[0] directory >/simplewallet.log
-  //     so if ran as "simplewallet" (no path), log file will be in cwd
+  //   default: < argv[0] directory >/monero-wallet-cli.log
+  //     so if ran as "monero-wallet-cli" (no path), log file will be in cwd
   //
   //   if log-file argument given:
   //     absolute path

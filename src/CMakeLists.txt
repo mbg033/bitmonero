@@ -92,6 +92,8 @@ function (bitmonero_add_library name)
   set_property(TARGET "${name}"
     PROPERTY
       FOLDER "libs")
+  target_compile_definitions(${objlib}
+    PRIVATE $<TARGET_PROPERTY:${name},INTERFACE_COMPILE_DEFINITIONS>)
 endfunction ()
 
 add_subdirectory(common)
@@ -105,7 +107,6 @@ add_subdirectory(wallet)
 add_subdirectory(p2p)
 add_subdirectory(cryptonote_protocol)
 
-add_subdirectory(miner)
 add_subdirectory(simplewallet)
 add_subdirectory(daemonizer)
 add_subdirectory(daemon)

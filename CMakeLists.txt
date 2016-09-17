@@ -30,7 +30,7 @@
 
 cmake_minimum_required(VERSION 2.8.7)
 
-project(bitmonero)
+project(monero)
 
 function (die msg)
   if (NOT WIN32)
@@ -497,8 +497,15 @@ else()
     endif()
     # Since gcc 4.9 the LTO format is non-standard (slim), so we need the gcc-specific ar and ranlib binaries
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9.0) AND NOT OPENBSD)
-      set(CMAKE_AR "gcc-ar")
-      set(CMAKE_RANLIB "gcc-ranlib")
+      # When invoking cmake on distributions on which gcc's binaries are prefixed
+      # with an arch-specific triplet, the user must specify -DCHOST=<prefix>
+      if (DEFINED CHOST)
+        set(CMAKE_AR "${CHOST}-gcc-ar")
+        set(CMAKE_RANLIB "${CHOST}-gcc-ranlib")
+      else()
+        set(CMAKE_AR "gcc-ar")
+        set(CMAKE_RANLIB "gcc-ranlib")
+      endif()
     endif()
   endif()
 
@@ -602,4 +609,12 @@ if(BUILD_DOCUMENTATION)
       COMMENT "Generating API documentation with Doxygen.." VERBATIM)
   endif()
 endif()
+
+# when ON - will install libwallet_merged into "lib"
+option(BUILD_GUI_DEPS "Build GUI dependencies." OFF)
+
+# This is not nice, distribution packagers should not enable this, but depend
+# on libunbound shipped with their distribution instead
+option(INSTALL_VENDORED_LIBUNBOUND "Install libunbound binary built from source vendored with this repo." OFF)
+
 
